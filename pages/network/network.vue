@@ -6,7 +6,11 @@
 		<view class="p" :prop='flag_update_node' :change:prop='d3.initEcharts'></view>
 		<svg></svg>
 		<wyb-popup ref="popup" type="center" height="730" width="500" radius="6" :showCloseIcon="false" :scrollY="true">
-			<view class="popup-content" style=" padding-top: 30upx; margin: 0 auto; top: 0; bottom: 0;">
+			<view style="position: fixed; top: 0; width: 100%; z-index: 100;" >
+				<button type="default" @click="addnodeimg" style="width: 50%; float: left;">上传图片</button>
+				<button @click="close" style="width: 50%; float: right;">确认</button>
+			</view>
+			<view class="popup-content" style="position: absolute; top: 60rpx; width: 100%; z-index: 50; margin-top: 100rpx; padding-top: 30upx; margin: 0 auto;">
 				<view class="input-view">
 					<view class="title" style="color: #66AAFF;">名称</view>
 					<input v-model="name" confirm-type="search" class="input" type="text" placeholder="请输入节点名称">
@@ -17,9 +21,8 @@
 					<textarea v-model="nodemessage" confirm-type="search" class="input-message" type="text" placeholder="请输入简介"
 					 auto-height=true maxlength=-1 />
 					</view>
-				<button type="default" @click="addnodeimg" style="width: 50%; float: left;">上传图片</button>
-				<button @click="close" style="width: 50%; float: right;">确认</button>
 			</view>
+			
 		</wyb-popup>
 		<wyb-popup ref="popup1" type="center" height="400" width="500" radius="6" :showCloseIcon="false" :scrollY="true">
 			<view class="popup-content">
@@ -29,8 +32,16 @@
 				<button @click="delete_link" style="width: 50%; float: right;">删除关系</button>
 			</view>
 		</wyb-popup>
-		<wyb-popup ref="popup2" type="center" height="780" width="500" radius="6" :showCloseIcon="false" :srollY="true">
-			<view class="popup-content" >
+		<wyb-popup ref="popup2" type="center" height="780" width="500" radius="6" :showCloseIcon="false" :sroll-y="true">
+			<view style="position: fixed; top: 0; width: 100%; z-index: 100;" >
+				<button type="default" @click="addnodeimg" style="width: 50%; float: left;">修改图片</button>
+				<button @click="click_update_node" style="width: 50%; float: right;">保存</button>
+			</view>
+			<view style="position: fixed; top: 100rpx; width: 100%; z-index: 100;">
+				<button @click="delete_node" >删除节点</button>
+			</view>
+			
+			<view class="popup-content" style="position: absolute; top: 160rpx; width: 100%; z-index: 100; margin-top: 100rpx; padding-top: 30upx; margin: 0 auto;">
 				<!-- <view class="title">姓名</view>
 				<input class="uni-input" v-model="name" focus placeholder="请输入姓名" /> -->
 				<view class="input-view">
@@ -41,11 +52,7 @@
 					<view class="title" style="color: #66AAFF;">简介</view>
 					<textarea v-model="nodemessage" confirm-type="search" class="input-message" type="text" placeholder="请修改简介" auto-height=true maxlength=-1 />
 				</view>
-				<view>
-					<button type="default" @click="addnodeimg" style="width: 50%; float: left;">修改图片</button>
-					<button @click="click_update_node" style="width: 50%; float: right;">保存</button>
-				</view>
-				<button @click="delete_node" >删除节点</button>
+				
 				
 			</view>
 			
@@ -106,7 +113,8 @@
 						active: false
 					}
 				],
-
+				
+				nodeindex: -1,
 				nodeid: -1,
 				name: '',
 				nodemessage: '',
@@ -206,6 +214,11 @@
 					}
 				})
 			},
+			
+			
+			
+			
+			
 			fabClick() {
 				uni.showToast({
 					title: '点击了悬浮按钮',
@@ -324,6 +337,7 @@
 			
 			click_update_node() {
 				
+				
 				try {
 					const value = uni.getStorageSync('gragh' + this.id);
 					if (value) {
@@ -334,7 +348,7 @@
 				}
 				
 				try {
-					const value = uni.getStorageSync('graph' + this.id + 'node' + this.gragh.nodes[this._node.index].id);
+					const value = uni.getStorageSync('graph' + this.id + 'node' + this.gragh.nodes[this.nodeindex].id);
 					if (value) {
 						this.node = value;
 					}
@@ -342,14 +356,16 @@
 					// error
 				}
 				
-				this.gragh.nodes[this._node.index].name = this.name;
-				this.node.name=this.name;
-				this.node.nodemessage=this.nodemessage;
+				this.gragh.nodes[this.nodeindex].name = this.name;
+				
 				
 				uni.setStorage({
 					key: 'gragh' + this.id,
 					data: this.gragh,
 				})
+				
+				this.node.name=this.name;
+				this.node.nodemessage=this.nodemessage;
 				this.node.nodeimg = this.nodeimg
 				
 				uni.setStorage({
@@ -517,6 +533,8 @@
 				this.name = this.node.name;
 				this.nodemessage = this.node.nodemessage;
 				this.nodeimg = this.node.nodeimg;
+				this.nodeid = this.node.nodeid;
+				this.nodeindex = e;
 			}
 			
 		},
@@ -973,7 +991,7 @@
 		align-items: flex-start;
 		flex-direction: row;
 		background-color: #e7e7e7;
-		height: 250px;
+		height: 1000px;
 		border-radius: 15px;
 		padding: 0 10px;
 		flex: 1;
@@ -1003,7 +1021,6 @@
 	.input-message{
 		flex: 1;
 		padding: 0 5px;
-		height: 20px;
 		line-height: 20px;
 		size: 10px;
 		font-size: 14px;
